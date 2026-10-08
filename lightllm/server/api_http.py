@@ -102,6 +102,9 @@ class G_Objs:
         if self.model_created is None:
             self.model_created = int(time.time())
 
+        if args.enable_rl:
+            self.app.include_router(rl_router)
+
         if args.run_mode == "pd_master":
             self.metric_client = MetricClient(get_shm_port_args().metric_port)
             self.httpserver_manager = HttpServerManagerForPDMaster(
@@ -527,9 +530,8 @@ async def metrics() -> Response:
 
 
 # RL 控制面接口（abort / pause / flush / memory / weight update），见 api_http_rl.py
+# 仅在 --enable_rl 时由 G_Objs.set_args 挂载
 from .api_http_rl import router as rl_router
-
-app.include_router(rl_router)
 
 # PD 分离控制面接口（P/D 注册与 KV 状态上报），见 api_http_pd.py
 from .api_http_pd import router as pd_router
