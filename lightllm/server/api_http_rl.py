@@ -6,13 +6,14 @@
   HTTP → HttpServerManager → HttpRlController
        → (多数) RlOpReq → Router → Model RlBackendOps
 
-路由在模块级 ``router`` 上注册，由 ``api_http`` ``include_router`` 挂载。
+路由在模块级 ``router`` 上注册，由 ``api_http`` ``include_router`` 挂载；
+未开启 ``--enable_rl`` 时，router 级依赖对所有路由返回 404。
 ``g_objs`` 在 handler 内懒导入，避免与 api_http 循环依赖。
 """
 
 from http import HTTPStatus
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse, Response
 
 from lightllm.server.io_struct import (
@@ -27,13 +28,20 @@ from lightllm.server.io_struct import (
     UpdateWeightsFromIPCReq,
     UpdateWeightsFromTensorReq,
 )
+from lightllm.utils.envs_utils import get_env_start_args
 from lightllm.utils.log_utils import init_logger
 
 from .api_errors import create_error_response
 
 logger = init_logger(__name__)
 
-router = APIRouter()
+
+async def _require_rl_enabled():
+    if not get_env_start_args().enable_rl:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+
+
+router = APIRouter(dependencies=[Depends(_require_rl_enabled)])
 
 
 async def handle_request_common(request_obj, handler):
