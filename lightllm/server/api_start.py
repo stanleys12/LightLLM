@@ -10,6 +10,7 @@ from .embed_cache.manager import start_cache_manager
 from lightllm.utils.log_utils import init_logger
 from lightllm.utils.envs_utils import (
     get_env_start_args,
+    get_pd_auth_token,
     get_unique_server_name,
     set_env_start_args,
     set_unique_server_name,
@@ -524,6 +525,9 @@ def pd_master_start(args: StartArgs):
 
     auto_set_max_req_total_len(args)
     auto_set_response_parsers(args)
+
+    if get_pd_auth_token() is None:
+        logger.warning("LIGHTLLM_PD_AUTH_TOKEN is not set, PD control-plane websockets are not authenticated")
 
     # when use config_server to support multi pd_master node, we
     # need generate unique node id for each pd_master node.

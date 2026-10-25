@@ -14,6 +14,7 @@ import pickle
 import ujson as json
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
+from lightllm.server.pd_auth import check_pd_auth
 from lightllm.server.pd_io_struct import ObjType
 from lightllm.utils.envs_utils import get_lightllm_websocket_max_message_size
 from lightllm.utils.log_utils import init_logger
@@ -27,6 +28,8 @@ router = APIRouter()
 async def register_and_keep_alive(websocket: WebSocket):
     from .api_http import g_objs
 
+    if not await check_pd_auth(websocket):
+        return
     await websocket.accept()
     websocket._receive_bytes_max_size = get_lightllm_websocket_max_message_size()
     client_ip, client_port = websocket.client
@@ -65,6 +68,8 @@ async def register_and_keep_alive(websocket: WebSocket):
 async def kv_move_status(websocket: WebSocket):
     from .api_http import g_objs
 
+    if not await check_pd_auth(websocket):
+        return
     await websocket.accept()
     client_ip, client_port = websocket.client
     logger.info(f"kv_move_status Client connected from IP: {client_ip}, Port: {client_port}")

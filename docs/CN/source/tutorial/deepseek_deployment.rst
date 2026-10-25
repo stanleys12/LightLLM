@@ -174,6 +174,16 @@ PD (Prefill-Decode) 分离模式将预填充和解码阶段分离部署，可以
     ``pd-master.default.svc,.default.svc,.svc``。不要只配置 ``localhost``：跨 Pod 通信使用的
     Service DNS 或 Pod IP 也必须绕过代理。
 
+.. note::
+
+    PD Master 默认接受任意对端发起的 ``/pd_register`` 和 ``/kv_move_status`` WebSocket 连接。
+    在 PD Master 和所有 Prefill/Decode 节点上设置相同的 ``LIGHTLLM_PD_AUTH_TOKEN`` 后，
+    未携带该共享密钥的连接会被拒绝。
+
+    .. code-block:: bash
+
+        export LIGHTLLM_PD_AUTH_TOKEN=$(openssl rand -hex 32)
+
 3.1 单 PD Master 模式
 ~~~~~~~~~~~~~~~~~~~~~
 

@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
+from lightllm.utils.envs_utils import get_pd_auth_token
 from lightllm.server.pd_io_struct import PD_Master_Obj, PDUpKVStatus
 from lightllm.server.router.model_infer.mode_backend.pd.decode_node_impl import up_status
 
@@ -26,6 +27,9 @@ def _websocket(send):
 
 
 def test_status_is_sent_directly_without_control_frames_or_reply(monkeypatch):
+    monkeypatch.setenv("LIGHTLLM_PD_AUTH_TOKEN", "secret")
+    get_pd_auth_token.cache_clear()
+
     async def run():
         manager = _manager()
         status = PDUpKVStatus(8, 100, b"decode metadata")
@@ -41,8 +45,9 @@ def test_status_is_sent_directly_without_control_frames_or_reply(monkeypatch):
         websocket = _websocket(send)
 
         @asynccontextmanager
-        async def connect(uri):
+        async def connect(uri, additional_headers):
             assert uri == "ws://master:8100/kv_move_status"
+            assert additional_headers == {"Authorization": "Bearer secret"}
             yield websocket
 
         monkeypatch.setattr(up_status.websockets, "connect", connect)

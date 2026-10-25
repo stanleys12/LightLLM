@@ -175,6 +175,16 @@ PD (Prefill-Decode) disaggregation mode separates prefill and decode stages for 
     ``pd-master.default.svc,.default.svc,.svc``. Configuring only ``localhost`` is insufficient: the Service
     DNS names or Pod IP addresses used for cross-Pod communication must also bypass the proxy.
 
+.. note::
+
+    PD Master accepts ``/pd_register`` and ``/kv_move_status`` WebSocket connections from any peer by default.
+    Set the same ``LIGHTLLM_PD_AUTH_TOKEN`` on PD Master and every Prefill/Decode node to reject peers that
+    do not present this shared token.
+
+    .. code-block:: bash
+
+        export LIGHTLLM_PD_AUTH_TOKEN=$(openssl rand -hex 32)
+
 3.1 Single PD Master Mode
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 

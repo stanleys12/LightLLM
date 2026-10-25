@@ -351,5 +351,11 @@ def get_pd_cache_high_priority_min_prompt_tokens() -> int:
 
 
 @lru_cache(maxsize=None)
+def get_pd_auth_token():
+    """PD 控制面 websocket 的共享密钥；未设置时不做认证。"""
+    return os.getenv("LIGHTLLM_PD_AUTH_TOKEN") or None
+
+
+@lru_cache(maxsize=None)
 def get_lightllm_url_pool_maxsize() -> int:
     return int(os.getenv("LIGHTLLM_URL_POOL_MAXSIZE", 512))

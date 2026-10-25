@@ -13,6 +13,7 @@ from lightllm.server.pd_io_struct import PDUpKVStatus
 from lightllm.utils.log_utils import init_logger
 from lightllm.utils.graceful_utils import graceful_registry
 from lightllm.server.pd_io_struct import PD_Master_Obj
+from lightllm.server.pd_auth import get_pd_auth_headers
 import torch.multiprocessing as mp
 from lightllm.utils.envs_utils import get_unique_server_name
 from lightllm.utils.process_check import start_parent_check_thread
@@ -80,7 +81,7 @@ class UpStatusManager:
         while True:
             try:
                 uri = f"ws://{pd_master_obj.host_ip_port}/kv_move_status"
-                async with websockets.connect(uri) as websocket:
+                async with websockets.connect(uri, additional_headers=get_pd_auth_headers()) as websocket:
                     import socket
 
                     sock = websocket.transport.get_extra_info("socket")
